@@ -26,18 +26,27 @@ paes <- read.csv(ruta_completa,header=TRUE,)
 
 # Min, Max, AVG, Median Variables
 summary(paes)
+str(paes)
+
+# Cambio la naturaleza de las variables
+paes2 <- within(paes,{
+  admit <- factor(admit,labels=c("Admitido","No Admitido"))
+  rank <- factor(rank,labels=c("D","C","B","A"))
+})
+
+summary(paes2)
+str(paes2)
 
 # Valores nulos por variable
-any(is.na(paes))
+any(is.na(paes2))
 #which(apply(paes, 1, function(x) any(is.na(x))))
 
 # Valores únicos por variable
-length(unique(paes$X))
-length(unique(paes$admit))
-length(unique(paes$paes))
-length(unique(paes$nem))
-length(unique(paes$rank)) # Variable Ranking hay que revisar la documentación de qué valores representa
-
+length(unique(paes2$X))
+length(unique(paes2$admit))
+length(unique(paes2$paes))
+length(unique(paes2$nem))
+length(unique(paes2$rank)) 
 
 #---
   
