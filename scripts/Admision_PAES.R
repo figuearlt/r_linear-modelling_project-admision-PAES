@@ -52,7 +52,7 @@ ggplot(paes, aes(x = rank)) +
   theme_minimal() + labs(title = 'Histograma Ranking', x='Ranking', y='Freq')
 
 ggplot(paes, aes(x = rank)) +
-  geom_boxplot(,)
+  geom_boxplot()
 
 
 

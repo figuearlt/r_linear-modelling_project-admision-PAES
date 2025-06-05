@@ -1,0 +1,70 @@
+---
+title: "Cargar API Kaggle"
+author: "Diego Figueroa"
+date: "2025-06-05"
+output: 
+  html_document:
+    theme: darkly
+    highlight: zenburn
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Instalar la CLI de Kaggle y cargar datos en Posit Cloud
+
+1. Crear cuenta en [kaggle.com](https://www.kaggle.com)
+2. Ir a **Profile → Account → sección API**
+3. Hacer clic en **Create New API Token**
+4. Esto descargará el archivo `kaggle.json`. Sube ese archivo a tu proyecto en **Posit Cloud**.
+5. Ubícalo en el directorio `~/.kaggle/`. Puedes hacerlo desde la consola de R con:
+
+
+    ```r
+    dir.create("~/.kaggle", showWarnings = FALSE)
+    file.copy("kaggle.json", "~/.kaggle/kaggle.json")
+    Sys.chmod("~/.kaggle/kaggle.json", mode = "600")
+    ```
+
+
+6. Instala el paquete ``reticulate`` y ejecuta el siguiente bloque para autenticar y descargar los datos:
+
+    ```r
+    install.packages("reticulate")
+    library(reticulate)
+    reticulate::py_run_string("
+    import os
+    from kaggle.api.kaggle_api_extended import KaggleApi
+    
+    # Configuración de la API
+    os.environ['KAGGLE_CONFIG_DIR'] = os.path.expanduser('~/.kaggle')
+    
+    api = KaggleApi()
+    api.authenticate()
+    
+    # Descargar y descomprimir el dataset
+    api.dataset_download_files(
+        'usuario_dueño_dataset/base_datos',
+        path='datos_admision',
+        unzip=True
+    )
+    ")
+    ```
+
+
+7. Finalmente, importa el archivo descargado (por ejemplo un `.csv`) con:
+
+    ```r
+    datos <- read.csv("ruta_base_datos/nombre_del_archivo.csv", encoding = "UTF-8")
+    ```
+
+  
+
+    ```r
+    #O si es un archivo Excel:
+    library(readxl)
+    datos <- read_excel("ruta_base_datos/nombre_del_archivo.xlsx")
+    
+    ```
+

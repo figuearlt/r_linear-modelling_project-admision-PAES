@@ -7,7 +7,7 @@
 install.packages("reticulate")
 library(reticulate)
 
-# Recomendación previa: Revisar en Referencess/Create_API_Kaggle.html en vista web
+# Recomendación previa: Revisar en Resources/Cargar_API_Kaggle.Rmd
 
 
 ################################
