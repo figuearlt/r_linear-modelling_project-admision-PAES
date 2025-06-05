@@ -461,25 +461,25 @@ desde la consola de R con:</p>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">Sys.chmod</span>(<span class="st">&quot;~/.kaggle/kaggle.json&quot;</span>, <span class="at">mode =</span> <span class="st">&quot;600&quot;</span>)</span></code></pre></div></li>
 <li><p>Instala el paquete <code>reticulate</code> y ejecuta el siguiente
 bloque para autenticar y descargar los datos:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;reticulate&quot;</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(reticulate)</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>reticulate<span class="sc">::</span><span class="fu">py_run_string</span>(<span class="st">&quot;</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="st">import os</span></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="st">from kaggle.api.kaggle_api_extended import KaggleApi</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>install.packages(<span class="st">&quot;reticulate&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>library(reticulate)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>reticulate::py_run_string(<span class="st">&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="er">import os</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="im">from</span> kaggle.api.kaggle_api_extended <span class="im">import</span> KaggleApi</span>
 <span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="st"># Configuración de la API</span></span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="st">os.environ[&#39;KAGGLE_CONFIG_DIR&#39;] = os.path.expanduser(&#39;~/.kaggle&#39;)</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co"># Configuración de la API</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>os.environ[<span class="st">&#39;KAGGLE_CONFIG_DIR&#39;</span>] <span class="op">=</span> os.path.expanduser(<span class="st">&#39;~/.kaggle&#39;</span>)</span>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="st">api = KaggleApi()</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="st">api.authenticate()</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>api <span class="op">=</span> KaggleApi()</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>api.authenticate()</span>
 <span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="st"># Descargar y descomprimir el dataset</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="st">api.dataset_download_files(</span></span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="st">    &#39;usuario_dueño_dataset/base_datos&#39;,</span></span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="st">    path=&#39;datos_admision&#39;,</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="st">    unzip=True</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="st">)</span></span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="st">&quot;</span>)</span></code></pre></div></li>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co"># Descargar y descomprimir el dataset</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>api.dataset_download_files(</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>    <span class="st">&#39;usuario_dueño_dataset/base_datos&#39;</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>    path<span class="op">=</span><span class="st">&#39;datos_admision&#39;</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>    unzip<span class="op">=</span><span class="va">True</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>)</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="st">&quot;)</span></span></code></pre></div></li>
 <li><p>Finalmente, importa el archivo descargado (por ejemplo un
 <code>.csv</code>) con:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>datos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;ruta_base_datos/nombre_del_archivo.csv&quot;</span>, <span class="at">encoding =</span> <span class="st">&quot;UTF-8&quot;</span>)</span></code></pre></div>
