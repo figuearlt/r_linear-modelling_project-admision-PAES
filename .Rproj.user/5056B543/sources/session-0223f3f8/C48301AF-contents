@@ -31,7 +31,7 @@ str(paes)
 # Cambio la naturaleza de las variables
 paes2 <- within(paes,{
   admit <- factor(admit,labels=c("Admitido","No Admitido"))
-  rank <- factor(rank,labels=c("D","C","B","A"))
+  rank <- factor(rank,labels=c("A","B","C","D"))
 })
 
 summary(paes2)
@@ -56,11 +56,14 @@ length(unique(paes2$rank))
 #######################
 
 # Ranking
-ggplot(paes, aes(x = rank)) +
-  geom_histogram(binwidth = 1, fill = "darkgreen", color = "black", alpha = 0.8) + # Histograma con binwidth ajustable
-  theme_minimal() + labs(title = 'Histograma Ranking', x='Ranking', y='Freq')
+ggplot(paes2, aes(x = rank)) +
+  geom_bar(fill = "steelblue") + 
+  labs(title = "Distribución de Rank en PAES",
+       x = "Rank Obtenido",
+       y = "Frecuencia") +
+  theme_minimal()
 
-ggplot(paes, aes(x = rank)) +
+ggplot(paes2, aes(x = rank)) +
   geom_boxplot()
 
 
