@@ -1,0 +1,21 @@
+library(MASS)
+install.packages("ggplot2")
+library(ggoplot2)
+
+#URL DEL DATASET:
+url_dataset_<- "https://www.kaggle.com/datasets/daniellopez01/admisionuescl"
+
+# Automatización de Carga:
+install.packages("reticulate")
+library(reticulate)
+reticulate::py_run_string("
+import os
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+os.environ['KAGGLE_CONFIG_DIR'] = os.path.expanduser('~/.kaggle')
+
+api = KaggleApi()
+api.authenticate()
+api.dataset_download_files('daniellopez01/admisionuescl', path='datos_admision', unzip=True)
+")
+
