@@ -81,7 +81,7 @@ write.csv(paes2,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajusta
 
 # Ranking
 p2<-ggplot(paes2, aes(x = rank)) +
-  geom_bar(fill = "steelblue") + 
+  geom_bar(fill = "#003f5c") + 
   labs(title = "Distribución de Rank en PAES",
        x = "Rank Obtenido",
        y = "Frecuencia") +
@@ -89,7 +89,7 @@ p2<-ggplot(paes2, aes(x = rank)) +
 
 # NEM
 p3<-ggplot(paes2, aes(x = nem)) +
-  geom_bar(fill = "darkgreen") + 
+  geom_bar(fill = "#ff6361") + 
   labs(title = "Distribución de Notas
         de Enseñanza Media",
        x = "NEM Obtenido",
@@ -108,7 +108,7 @@ p4<-ggplot(paes2, aes(x = paes)) +
 
 # Admitido
 p1<-ggplot(paes2, aes(x = admit)) +
-  geom_bar(fill = "brown") + 
+  geom_bar(fill = "#58508d") + 
   labs(title = "Distribución de Admisión",
        x = "Admisión",
        y = "Frecuencia") +
@@ -118,3 +118,42 @@ p1<-ggplot(paes2, aes(x = admit)) +
 # Organizarlos en 2x2
 grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
+
+#######################
+# ANALISIS BIVARIADO #
+#######################
+
+
+# Ranking y PAES
+
+g1<-ggplot(paes2, aes(x = rank, y=paes)) +
+  geom_boxplot(fill = "#003f5c") +
+  labs(title = "",
+       x = "Ranking",
+       y = "Puntaje PAES") +
+  theme_minimal()
+
+# NEM y PAES
+g2<-ggplot(paes2, aes(x = nem,y=paes)) +
+  geom_point(color='#ff6361') + 
+  labs(title = "",
+       x = "NEM Obtenido",
+       y = "Puntaje PAES") +
+  theme_minimal()
+
+# Admitido y PAES
+g3<-ggplot(paes2, aes(x = admit, y=paes)) +
+  geom_boxplot(fill = "#58508d") +
+  labs(title = "",
+       x = "Admisión",
+       y = "Puntaje PAES") +
+  theme_minimal()
+
+
+# Organizarlos en 2x2
+grid.arrange(g1, g2, g3, nrow = 2, ncol = 2)
+
+
+# Matriz de Correlación entre variables con método kendall
+# Distnacia de Cook para evaluar efecto de outliers en la varianza de la variable admisión
+# regresión logística
