@@ -1,3 +1,7 @@
+#########################
+# Identificar el modelo #
+#########################
+
 library(MASS)
 #install.packages("ggplot2")
 library(ggplot2)
@@ -11,19 +15,20 @@ library(car)
 library(ppcor)
 
 
+
 ################################
 # Abrir el dataframe procesado #
 ################################
 path <- '/cloud/project/data/processed/datos_admision'
-archivo <- 'AdmisionUes_Ajustado.rds'
+archivo <- 'AdmisionUes_Ajustado_sin_Influyentes.rds'
 ruta_completa <- file.path(path,archivo)
 paes <- readRDS(ruta_completa)
-paes$paes_std<-scale(paes$paes)[,1]
+head(paes)
+
 
 ##########################################################
 ## Confección de los modelos para trabajar con AIC y BIC##
 ##########################################################
-
 
 
 #################

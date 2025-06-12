@@ -73,10 +73,6 @@ exp(logit$coefficients)
 # Revisar e interpretar los resultados de la s tablas de una reg Logit
 # Sabeer interpretar las odds
 
-#########################
-# Identificar el modelo #
-#########################
-
 
 
 ###############################
@@ -114,12 +110,25 @@ influyentes_filtradas <- influyentes[
 
 influyentes_filtradas
 
-# Logit sin influyentes (Logit_2):
+############################################
+# Guardamos el dataframe en un archivo csv #
+############################################
 paes.train_sin_influyentes <-paes.train[-obs_influyentes, ]
+write.csv(paes.train_sin_influyentes,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
+saveRDS(paes.train_sin_influyentes, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
+
+######################################
+# Nuevo Modelo Logit sin Influyentes #
+######################################
+
+# Logit sin influyentes (Logit_2):
 logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem+rank,family='binomial')
 summary(logit_2)
 
+######################################
+# Nuevo Modelo Logit con Interacción #
+######################################
+# Logit sin influyentes y con interacción (Logit_3):
+logit_3 <- glm(data=paes.train_sin_influyentes,admit~paes_std*rank+nem,family='binomial')
+summary(logit_3)
 
-#########################
-# Identificar el modelo #
-#########################
