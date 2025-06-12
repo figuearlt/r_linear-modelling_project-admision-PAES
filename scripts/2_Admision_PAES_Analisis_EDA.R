@@ -13,10 +13,16 @@ library(gridExtra)
 # Abrir el dataframe procesado #
 ################################
 path <- '/cloud/project/data/processed/datos_admision'
-archivo <- 'AdmisionUes_Ajustado.csv'
+archivo <- 'AdmisionUes_Ajustado.rds'
 ruta_completa <- file.path(path,archivo)
-paes <- read.csv(ruta_completa,header=TRUE,)
+df <- read.csv(ruta_completa,header=TRUE,)
+
+paes <- readRDS(ruta_completa)
+
 head(paes)
+str(paes)
+
+
 #######################
 # ANALISIS UNIVARIADO #
 #######################
@@ -28,23 +34,25 @@ tabla_admitidos
 tabla_admitidos$proporcion<-round(tabla_admitidos$N / sum(tabla_admitidos$N) *100,3)
 colnames(tabla_admitidos)=c("Admitido/No Admitido","N","%")
 tabla_admitidos
-# Es relevante hacer este cálculo de proporciones, debido a que al momento de hacer el sampling de la data, podemos encontrarnos con una base desproporcionada hacia los Admitidos, cayendo en un caso de Underfitting 
+# Desequilibrio en los datos: Es relevante hacer este cálculo de proporciones, debido a que al momento de hacer el sampling de la data, podemos encontrarnos con una base desproporcionada hacia los Admitidos, cayendo en un caso de Underfitting 
 # Esto también impacta el sesgo del modelo, incrementándolo, sin obtener ventajas en cuanto a la varianza.
 
 # Admitido
 ggplot(paes, aes(x = admit)) +
-  geom_bar(fill = "#58508d") + 
+  geom_bar(fill = "#58508d",width = 0.5) + 
   labs(title = "Distribución de Admisión",
        x = "Admisión",
        y = "Frecuencia") +
+  scale_x_discrete(labels = c("0" = "Admitido", "1" = "No Admitido")) +
   theme_minimal()
 
 
 
 # Ranking
 p2<-ggplot(paes, aes(x = rank)) +
-  geom_bar(fill = "#003f5c") + 
-  labs(title = "Distribución de Rank en PAES",
+  geom_bar(fill = "#003f5c",width = 0.5) + 
+  labs(title = "Distribución del Ranking
+       de estudiantes",
        x = "Rank Obtenido",
        y = "Frecuencia") +
   theme_minimal()
@@ -63,17 +71,19 @@ head(paes)
 # PAES
 p4<-ggplot(paes, aes(x = paes)) +
   geom_histogram(fill = "#ffa600",bins=50,alpha=0.8) + 
-  labs(title = "Distribución de PAES",
+  labs(title = "Distribución de Puntaje
+       PAES",
        x = "Pje PAES Obtenido",
        y = "Frecuencia") +
   theme_minimal()
 
 # Admitido
 p1<-ggplot(paes, aes(x = admit)) +
-  geom_bar(fill = "#58508d") + 
-  labs(title = "Distribución de Admisión",
+  geom_bar(fill = "#58508d",width = 0.5) + 
+  labs(title = "Distribución de Admitidos vs 
+       No Admitidos",
        x = "Admisión",
-       y = "Frecuencia") +
+       y = "Frecuencia") + scale_x_discrete(labels = c("0" = "Admitido", "1" = "No Admitido")) +
   theme_minimal()
 
 
@@ -108,7 +118,7 @@ g3<-ggplot(paes, aes(x = admit, y=paes)) +
   geom_boxplot(fill = "#58508d") +
   labs(title = "",
        x = "Admisión",
-       y = "Puntaje PAES") +
+       y = "Puntaje PAES") + scale_x_discrete(labels = c("0" = "Admitido", "1" = "No Admitido")) +
   theme_minimal()
 
 # Admitido y PAES
@@ -116,7 +126,7 @@ g4<-ggplot(paes, aes(x = admit, y=nem)) +
   geom_boxplot(fill = "#ffa600") +
   labs(title = "",
        x = "Admisión",
-       y = "Puntaje NEM") +
+       y = "Puntaje NEM") + scale_x_discrete(labels = c("0" = "Admitido", "1" = "No Admitido"))+
   theme_minimal()
 
 # Admitido y Ranking
@@ -137,5 +147,6 @@ g5<-ggplot(paes, aes(x = rank, y=nem)) +
 
 # Organizarlos en 3x3
 grid.arrange(g1, g2, g3,g4,g5,g6, nrow = 3, ncol = 2)
+
 
 

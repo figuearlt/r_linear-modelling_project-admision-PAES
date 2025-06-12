@@ -7,17 +7,21 @@ library(MASS)
 library(ggplot2)
 #install.packages("gridExtra")
 library(gridExtra)
-#install.packages("carg")
+#install.packages("carData")
+library(carData)
+#install.packages("car")
 library(car)
+#install.packages("ppcor")
+library(ppcor)
 
 ################################
 # Abrir el dataframe procesado #
 ################################
 path <- '/cloud/project/data/processed/datos_admision'
-archivo <- 'AdmisionUes_Ajustado.csv'
+archivo <- 'AdmisionUes_Ajustado.rds'
 ruta_completa <- file.path(path,archivo)
-paes <- read.csv(ruta_completa,header=TRUE,)
-head(paes)
+paes <- readRDS(ruta_completa)
+
 
 ###################################
 # Abrir el dataframe sin procesar #
@@ -35,37 +39,68 @@ head(paes.raw)
 #################################
 # Correlación Parcial y General #
 #################################
+paes_numeric <- within(paes,{
+  admit<-as.numeric(admit)
+})
+cor(paes_numeric[, -4], method = "kendall")
+pcor(paes_numeric [, -4], method="kendall")
 
-cor(paes.raw [, -1], y = NULL, use = "everything", method = c("kendall"))
-install.packages("ppcor")
-library(ppcor)
-pcor(paes.raw [, -1], method="kendall")
+
+
+
 
 ###################################################
 # Regresión Logística e Identificación del Modelo #
 ###################################################
 
-# Regresión Logística
-logit<-glm(admit~rank + paes+ nem,
-           data = paes,
-           family =binomial(link = "logit"))
-summary(logit)
+# Datos de Entrenamiento y Testeo
+set.seed(123)
+train.filas <- sample(nrow(paes),.7*nrow(paes),replace=FALSE)
+paes.train <- paes[train.filas,]
+paes.test <- paes[-train.filas,]
 
-modelo_logit <- glm(
-  admit ~ paes + nem + rank,
-  data = paes.raw,
-  family = binomial()
-)
-summary(modelo_logit)
-exp(modelo_logit$coefficients)
+#Estandarización de variable paes
+paes.train$paes_std<-scale(paes.train$paes)[,1]
+sd(paes.train$paes)
+
+# Regresión Logística
+logit<-glm(admit~rank + paes_std+ nem,
+           data = paes.train,
+           family =binomial())
+summary(logit)
+exp(logit$coefficients)
 
 # Revisar e interpretar los resultados de la s tablas de una reg Logit
 # Sabeer interpretar las odds
-# VIF
-# Distancia de Cook
-# Estandarizar variable PAES con el valor Z
-# categorización correcta ( para trabajar en el modelo) con la variable ranking
 
+#########################
+# Identificar el modelo #
+#########################
+
+
+
+###############################
+# Multicolinealidad mediante  #
+###############################
+
+# ¿Existe Multicolinealidad de los parámetros? Análisis VIF
+car::vif(logit)
+cal.vif1<-car::vif(logit)
+cal.vif1
+
+
+##############################################
+# Influencia de Outliers en los coeficientes #
+##############################################
+
+# Distancia de Cook
+
+
+
+
+#########################
+# Identificar el modelo #
+#########################
 
 #Identificar el modelo por medio de backward, forward, stepwise
 # AIC con Forward

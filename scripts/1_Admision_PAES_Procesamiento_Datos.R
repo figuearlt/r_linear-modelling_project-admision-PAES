@@ -13,7 +13,6 @@ library(gridExtra)
 # CARGAR DATOS #
 ################
 
-
 # Cargar datos ya almacenados en el Proyecto Posit Cloud
 path <- '/cloud/project/data/raw/datos_admision'
 archivo <- 'AdmisionUes.csv'
@@ -40,35 +39,50 @@ sum(duplicated(paes))
 
 # Cambio la naturaleza de las variables
 paes2 <- within(paes,{
-  admit <- factor(admit,labels=c("No Admitido","Admitido"))
-  rank <- factor(rank,labels=c("A","B","C","D"))
+  admit <- as.factor(admit)
+  rank <- factor(rank,labels=c("Grupo A","Grupo B","Grupo C","Grupo D"),
+                 levels=c(1,2,3,4),ordered = FALSE)
+  
 })
+
 
 summary(paes2)
 str(paes2)
+
 # Transformar la variable X en el índice
 
-rownames(paes)<-paes2$X
+rownames(paes2)<-paes2$X
+# Eliminar variable X (Id)
+paes3 <-paes2[,-1]
+head(paes3)
+
+# Estandarizar la variable paes
+
+paes4<-paes3
+head(paes4)
+
 
 # Valores nulos por variable
-any(is.na(paes2)) # ¿Cuáles na? 
-sum(is.na(paes2)) # ¿Cuántos na?
-#which(apply(paes, 1, function(x) any(is.na(x))))
+any(is.na(paes4)) # ¿Cuáles na? 
+sum(is.na(paes4)) # ¿Cuántos na?
 
 # Valores únicos por variable
-length(unique(paes2$X))
-length(unique(paes2$admit))
-length(unique(paes2$paes))
-length(unique(paes2$nem))
-length(unique(paes2$rank)) 
 
-head(paes2)
+length(unique(paes4$admit))
+length(unique(paes4$paes_std))
+length(unique(paes4$nem))
+length(unique(paes4$rank)) 
+
+head(paes4)
+str(paes4)
 
 
 ############################################
 # Guardamos el dataframe en un archivo csv #
 ############################################
 
-write.csv(paes2,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.csv',row.names = FALSE)
-
+write.csv(paes4,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.csv',row.names = FALSE)
+saveRDS(paes4, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.rds")
 #---
+
+
