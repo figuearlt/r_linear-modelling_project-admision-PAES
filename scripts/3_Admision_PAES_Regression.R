@@ -123,8 +123,3 @@ summary(logit_2)
 #########################
 # Identificar el modelo #
 #########################
-
-#Identificar el modelo por medio de backward, forward, stepwise
-# AIC con Forward
-fit1<-lm(mpg~1,data=mtcars2)# Punto de partida
-forw<-stepAIC(fit1,scope = list(upper=~cyl+disp+hp+drat+wt+qsec+vs+am+gear+carb,lower=~1),direction='forward')
