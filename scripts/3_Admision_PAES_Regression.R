@@ -94,8 +94,30 @@ cal.vif1
 ##############################################
 
 # Distancia de Cook
+par(mfrow = c(1, 1))
+influencePlot(logit)
+# Revisar las observaciones que más influencias los coeficientes
+influencia <- influence.measures(logit)
+summary(influencia)
+# Identificar el valor que afecta
+obs_influyentes <- which(apply(influencia$is.inf, 1, any))
+obs_influyentes
 
+# Datos Influyentes
 
+influyentes <- paes.train[obs_influyentes, ]
+# Aplicar condición dentro de ese subconjunto
+influyentes_filtradas <- influyentes[
+  influyentes$nem >= 6 &
+    (influyentes$rank == "Grupo D" | influyentes$rank == "Grupo C"),
+]
+
+influyentes_filtradas
+
+# Logit sin influyentes (Logit_2):
+paes.train_sin_influyentes <-paes.train[-obs_influyentes, ]
+logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem+rank,family='binomial')
+summary(logit_2)
 
 
 #########################
