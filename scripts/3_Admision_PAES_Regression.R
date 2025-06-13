@@ -122,13 +122,80 @@ saveRDS(paes.train_sin_influyentes, "/cloud/project/data/processed/datos_admisio
 ######################################
 
 # Logit sin influyentes (Logit_2):
-logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem+rank,family='binomial')
-summary(logit_2)
+modelo_logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem+rank,family='binomial')
+summary(modelo_logit_2)
 
 ######################################
 # Nuevo Modelo Logit con Interacción #
 ######################################
 # Logit sin influyentes y con interacción (Logit_3):
-logit_3 <- glm(data=paes.train_sin_influyentes,admit~paes_std*rank+nem,family='binomial')
-summary(logit_3)
+modelo_logit_3 <- glm(data=paes.train_sin_influyentes,admit~paes_std*rank+nem,family='binomial')
+summary(modelo_logit_3)
+#--
 
+
+##########################################################
+## Confección de los modelos para trabajar con AIC y BIC##
+##########################################################
+
+
+#################
+## AIC stepwise##
+#################
+
+modelo_base <- glm(admit ~ paes_std, data = paes.train_sin_influyentes, family = binomial)
+modelo_completo <- glm(admit ~ paes_std*rank+ nem, data = paes.train_sin_influyentes, family = binomial)
+
+step(modelo_base, scope = formula(modelo_completo), direction = "forward")
+step(modelo_completo, direction = "backward")
+step(modelo_completo, direction = "both")
+
+
+#################
+## BIC stepwise##
+#################
+
+step(modelo_base, scope = formula(modelo_completo), direction = "forward", k = log(nrow(paes)))
+step(modelo_completo, direction = "backward", k = log(nrow(paes)))
+step(modelo_completo, direction = "both", k = log(nrow(paes)))
+# Los 3 procedimientos de selección, para cada uno de ambos criterios de selección (AIC/BIC) entregan que el modelo aditivo completo es el mejor
+
+#####################
+#  SELECCION MODELO #
+#####################
+
+AIC(modelo_logit_2,modelo_logit_3)
+BIC(modelo_logit_2,modelo_logit_3)
+modelo_final <- modelo_logit_2
+summary(modelo_final)
+
+#######################
+# TEST DE LOS MODELOS #
+#######################
+
+# Multicolinealidad
+car::vif(modelo_final) # No existe multicolinealidad entre los parámetros
+
+# Influencia de los outliers
+influencePlot(modelo_final)
+cooksd <- cooks.distance(modelo_final)
+which(cooksd > 4 / nrow(paes.train_sin_influyentes))
+
+# Linealidad de los parámetros
+boxTidwell(admit ~ paes_std + nem, data = paes.train_sin_influyentes)
+
+# Bondad de Ajusta
+hoslem.test(paes.train$admit, fitted(modelo_final))
+
+# Curva ROC y AUC
+
+prob <- predict(modelo_final, newdata = paes.test, type = "response")
+roc_curve <- roc(paes.test$admit, prob)
+auc(roc_curve)
+plot(roc_curve)
+
+
+
+##############
+# PREDICCION #
+##############
