@@ -13,6 +13,8 @@ library(carData)
 library(car)
 #install.packages("ppcor")
 library(ppcor)
+#install.packages("pROC")
+library(pROC)
 
 ################################
 # Abrir el dataframe procesado #
@@ -22,19 +24,6 @@ archivo <- 'AdmisionUes_Ajustado.rds'
 ruta_completa <- file.path(path,archivo)
 paes <- readRDS(ruta_completa)
 
-
-###################################
-# Abrir el dataframe sin procesar #
-###################################
-
-##Debe hacerse con la matriz original, aunque tengo mis dudas si es de relevancia este análisis,
-##dada la naturaleza de 4 de las 5 variables.
-
-path <- '/cloud/project/data/raw/datos_admision'
-archivo <- 'AdmisionUes.csv'
-ruta_completa <- file.path(path,archivo)
-paes.raw <- read.csv(ruta_completa,header=TRUE,)
-head(paes.raw)
 
 #################################
 # Correlación Parcial y General #
@@ -46,9 +35,6 @@ cor(paes_numeric[, -4], method = "kendall")
 pcor(paes_numeric [, -4], method="kendall")
 
 
-
-
-
 ###################################################
 # Regresión Logística e Identificación del Modelo #
 ###################################################
@@ -58,6 +44,9 @@ set.seed(123)
 train.filas <- sample(nrow(paes),.7*nrow(paes),replace=FALSE)
 paes.train <- paes[train.filas,]
 paes.test <- paes[-train.filas,]
+# Resetear valores del índice de la variable
+rownames(paes.train) <- NULL
+head(rownames(paes.train))
 
 #Estandarización de variable paes
 paes.train$paes_std<-scale(paes.train$paes)[,1]
@@ -114,8 +103,12 @@ influyentes_filtradas
 # Guardamos el dataframe en un archivo csv #
 ############################################
 paes.train_sin_influyentes <-paes.train[-obs_influyentes, ]
+# Resetear valores del índice de la variable
+rownames(paes.train_sin_influyentes) <- NULL
+head(rownames(paes.train_sin_influyentes))
 write.csv(paes.train_sin_influyentes,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
 saveRDS(paes.train_sin_influyentes, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
+
 
 ######################################
 # Nuevo Modelo Logit sin Influyentes #
@@ -177,25 +170,23 @@ summary(modelo_final)
 car::vif(modelo_final) # No existe multicolinealidad entre los parámetros
 
 # Influencia de los outliers
+
 influencePlot(modelo_final)
 cooksd <- cooks.distance(modelo_final)
 which(cooksd > 4 / nrow(paes.train_sin_influyentes))
+paes.train_sin_influyentes[c(33,413,421, 787, 1002, 1155), ]
 
-# Linealidad de los parámetros
-boxTidwell(admit ~ paes_std + nem, data = paes.train_sin_influyentes)
 
-# Bondad de Ajusta
-hoslem.test(paes.train$admit, fitted(modelo_final))
+str(paes.train_sin_influyentes)
 
 # Curva ROC y AUC
 
+# Estandarización de la variable paes, según la media y sd de paes train
+media_paes <- mean(paes.train$paes, na.rm = TRUE)
+desv_paes  <- sd(paes.train$paes, na.rm = TRUE)
+paes.test$paes_std <- (paes.test$paes - media_paes) / desv_paes
+  
 prob <- predict(modelo_final, newdata = paes.test, type = "response")
 roc_curve <- roc(paes.test$admit, prob)
 auc(roc_curve)
 plot(roc_curve)
-
-
-
-##############
-# PREDICCION #
-##############
