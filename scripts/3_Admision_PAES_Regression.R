@@ -19,11 +19,16 @@ library(pROC)
 ################################
 # Abrir el dataframe procesado #
 ################################
-path <- '/cloud/project/data/processed/datos_admision'
+
+# Posit Cloud
+#path <- '/cloud/project/data/processed/datos_admision'
+
+# Disco Local
+path <- 'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision'
 archivo <- 'AdmisionUes_Ajustado.rds'
 ruta_completa <- file.path(path,archivo)
 paes <- readRDS(ruta_completa)
-
+head(paes)
 
 #################################
 # Correlación Parcial y General #
@@ -44,16 +49,22 @@ set.seed(123)
 train.filas <- sample(nrow(paes),.7*nrow(paes),replace=FALSE)
 paes.train <- paes[train.filas,]
 paes.test <- paes[-train.filas,]
+
 # Resetear valores del índice de la variable
 rownames(paes.train) <- NULL
 head(rownames(paes.train))
 
-#Estandarización de variable paes
+#Estandarización de variable paes y nem
 paes.train$paes_std<-scale(paes.train$paes)[,1]
-sd(paes.train$paes)
+sd_paes<-sd(paes.train$paes)
+print(sd_paes)
+
+paes.train$nem_std<-scale(paes.train$nem)[,1]
+sd_nem<-sd(paes.train$nem)
+print(sd_nem)
 
 # Regresión Logística
-logit<-glm(admit~rank + paes_std+ nem,
+logit<-glm(admit~rank + paes_std+ nem_std,
            data = paes.train,
            family =binomial())
 summary(logit)
@@ -74,16 +85,42 @@ cal.vif1<-car::vif(logit)
 cal.vif1
 
 
-##############################################
-# Influencia de Outliers en los coeficientes #
-##############################################
+###############################
+# Disgnóstico de los Outliers #
+###############################
+
+p<-ncol(paes.train)-1 # Por admit
+n<-nrow(paes.train)
+sqrt_n<-sqrt(n)
 
 # Distancia de Cook
 par(mfrow = c(1, 1))
-influencePlot(logit)
+influencePlot(logit,id.method='identify',main="Influence Plot")
+summary(influence.measures(logit))
+    # Para Hatvalues
+    # Qué mide: cuán lejos está una observación del centro del espacio de los predictores.
+      high_leverage <- which(hatvalues(logit)>2*p/n)
+    # Para Residuos Studentizados
+    # Qué mide: cuán inusual es la respuesta observada dado el modelo ajustado, excluyendo la observación en cuestión.
+      outliers_rstud <- which(abs(rstudent(logit))>2)
+    # Para Distnacia de Cook
+    # Qué mide: el efecto total que tendría eliminar una observación sobre todos los coeficientes del modelo.
+      dist_cook_measure <- 4/(n-p-1)
+      print(dist_cook_measure)
+      outliers_dist_cook <- which(cooks.distance(logit)>dist_cook_measure)
+    # Para DFBetas 
+    # Qué mide: cuánto cambia cada coeficiente si eliminamos una observación específica.
+      logit_dfbeta <- which(abs(dfbetas(logit))>2/sqrt_n, arr.ind = FALSE)
+    # Para DFFITS
+    # Qué mide: cuánto cambia la predicción para una observación si esta es excluida del modelo.
+      logit_dffits<-which(abs(dffits(logit))>2*sqrt(p/n)) 
+
+      
+      
 # Revisar las observaciones que más influencias los coeficientes
 influencia <- influence.measures(logit)
 summary(influencia)
+
 # Identificar el valor que afecta
 obs_influyentes <- which(apply(influencia$is.inf, 1, any))
 obs_influyentes
@@ -106,10 +143,12 @@ paes.train_sin_influyentes <-paes.train[-obs_influyentes, ]
 # Resetear valores del índice de la variable
 rownames(paes.train_sin_influyentes) <- NULL
 head(rownames(paes.train_sin_influyentes))
-write.csv(paes.train_sin_influyentes,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
-saveRDS(paes.train_sin_influyentes, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
-
-
+#POSIT CLOUD
+#write.csv(paes.train_sin_influyentes,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
+#saveRDS(paes.train_sin_influyentes, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
+# DISCO LOCAL
+write.csv(paes.train_sin_influyentes,'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
+saveRDS(paes.train_sin_influyentes, "C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
 ######################################
 # Nuevo Modelo Logit sin Influyentes #
 ######################################

@@ -12,7 +12,10 @@ library(gridExtra)
 ################################
 # Abrir el dataframe procesado #
 ################################
+#Posit Cloud
 path <- '/cloud/project/data/processed/datos_admision'
+#Disco Local
+path <- 'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision'
 archivo <- 'AdmisionUes_Ajustado.rds'
 ruta_completa <- file.path(path,archivo)
 df <- read.csv(ruta_completa,header=TRUE,)

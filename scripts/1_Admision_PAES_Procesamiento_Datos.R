@@ -14,7 +14,12 @@ library(gridExtra)
 ################
 
 # Cargar datos ya almacenados en el Proyecto Posit Cloud
+
+
+# Posit Cloud
 path <- '/cloud/project/data/raw/datos_admision'
+# Disco Local
+path <- 'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/raw/datos_admision'
 archivo <- 'AdmisionUes.csv'
 ruta_completa <- file.path(path,archivo)
 paes <- read.csv(ruta_completa,header=TRUE,)
@@ -81,8 +86,13 @@ str(paes4)
 # Guardamos el dataframe en un archivo csv #
 ############################################
 
-write.csv(paes4,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.csv',row.names = FALSE)
-saveRDS(paes4, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.rds")
+
+#Posit Cloud
+#write.csv(paes4,'/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.csv',row.names = FALSE)
+#saveRDS(paes4, "/cloud/project/data/processed/datos_admision/AdmisionUes_Ajustado.rds")
 #---
 
+# Disco Local
 
+write.csv(paes4,'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision/AdmisionUes_Ajustado.csv',row.names = FALSE)
+saveRDS(paes4, "C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data//processed/datos_admision/AdmisionUes_Ajustado.rds")
