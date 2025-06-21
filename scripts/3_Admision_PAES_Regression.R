@@ -15,6 +15,9 @@ library(car)
 library(ppcor)
 #install.packages("pROC")
 library(pROC)
+#install.packages("robustbase")
+library(robustbase)
+library(gridExtra)
 
 ################################
 # Abrir el dataframe procesado #
@@ -70,14 +73,10 @@ logit<-glm(admit~rank + paes_std+ nem_std,
 summary(logit)
 exp(logit$coefficients)
 
-# Revisar e interpretar los resultados de la s tablas de una reg Logit
-# Sabeer interpretar las odds
 
-
-
-###############################
-# Multicolinealidad mediante  #
-###############################
+#####################
+# Multicolinealidad #
+#####################
 
 # ¿Existe Multicolinealidad de los parámetros? Análisis VIF
 car::vif(logit)
@@ -139,6 +138,7 @@ influyentes_filtradas
 ############################################
 # Guardamos el dataframe en un archivo csv #
 ############################################
+
 paes.train_sin_influyentes <-paes.train[-obs_influyentes, ]
 # Resetear valores del índice de la variable
 rownames(paes.train_sin_influyentes) <- NULL
@@ -149,19 +149,32 @@ head(rownames(paes.train_sin_influyentes))
 # DISCO LOCAL
 write.csv(paes.train_sin_influyentes,'C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.csv',row.names = FALSE)
 saveRDS(paes.train_sin_influyentes, "C:/Users/diego/OneDrive/Escritorio/Diplomado Data Science/Diplomado PUCV/r_linear_modelling_project_admision_PAES/r_linear-modelling_project-admision-PAES/data/processed/datos_admision/AdmisionUes_Ajustado_sin_Influyentes.rds")
+
+###########################################################
+## Modelo que penaliza los valores influyentes (Robusto) ##
+###########################################################
+
+
+modelo_robusto <- glmrob(admit ~ paes_std + nem_std + rank, data = paes.train, family = binomial)
+summary(modelo_robusto)
+exp(modelo_robusto$coefficients)
+
+
+
 ######################################
 # Nuevo Modelo Logit sin Influyentes #
 ######################################
 
 # Logit sin influyentes (Logit_2):
-modelo_logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem+rank,family='binomial')
+modelo_logit_2 <- glm(data=paes.train_sin_influyentes,admit~paes_std+nem_std+rank,family='binomial')
 summary(modelo_logit_2)
 
 ######################################
 # Nuevo Modelo Logit con Interacción #
 ######################################
+
 # Logit sin influyentes y con interacción (Logit_3):
-modelo_logit_3 <- glm(data=paes.train_sin_influyentes,admit~paes_std*rank+nem,family='binomial')
+modelo_logit_3 <- glm(data=paes.train_sin_influyentes,admit~paes_std*rank+nem_std,family='binomial')
 summary(modelo_logit_3)
 #--
 
@@ -176,7 +189,7 @@ summary(modelo_logit_3)
 #################
 
 modelo_base <- glm(admit ~ paes_std, data = paes.train_sin_influyentes, family = binomial)
-modelo_completo <- glm(admit ~ paes_std*rank+ nem, data = paes.train_sin_influyentes, family = binomial)
+modelo_completo <- glm(admit ~ paes_std*rank+ nem_std, data = paes.train_sin_influyentes, family = binomial)
 
 step(modelo_base, scope = formula(modelo_completo), direction = "forward")
 step(modelo_completo, direction = "backward")
@@ -192,9 +205,13 @@ step(modelo_completo, direction = "backward", k = log(nrow(paes)))
 step(modelo_completo, direction = "both", k = log(nrow(paes)))
 # Los 3 procedimientos de selección, para cada uno de ambos criterios de selección (AIC/BIC) entregan que el modelo aditivo completo es el mejor
 
+
+
+
 #####################
 #  SELECCION MODELO #
 #####################
+
 
 AIC(modelo_logit_2,modelo_logit_3)
 BIC(modelo_logit_2,modelo_logit_3)
@@ -220,12 +237,24 @@ str(paes.train_sin_influyentes)
 
 # Curva ROC y AUC
 
-# Estandarización de la variable paes, según la media y sd de paes train
+# Estandarización de la variable paes y nem, según la media y sd de paes train
 media_paes <- mean(paes.train$paes, na.rm = TRUE)
 desv_paes  <- sd(paes.train$paes, na.rm = TRUE)
 paes.test$paes_std <- (paes.test$paes - media_paes) / desv_paes
+
+media_nem <- mean(paes.train$nem, na.rm = TRUE)
+desv_nem  <- sd(paes.train$nem, na.rm = TRUE)
+paes.test$nem_std <- (paes.test$nem - media_nem) / desv_nem
   
+# Modelo Final
 prob <- predict(modelo_final, newdata = paes.test, type = "response")
 roc_curve <- roc(paes.test$admit, prob)
+p1<-plot(roc_curve)
+
+# Modelo robusto
+prob2 <- predict(modelo_robusto, newdata = paes.test, type = "response")
+roc_curve2 <- roc(paes.test$admit, prob2)
+
+# Comparación con modelo robusto
 auc(roc_curve)
-plot(roc_curve)
+auc(roc_curve2)
