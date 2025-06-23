@@ -17,7 +17,15 @@ library(ppcor)
 library(pROC)
 #install.packages("robustbase")
 library(robustbase)
-library(gridExtra)
+
+#install.packages("ROSE")
+library(ROSE)
+#install.packages("regclass")
+library(regclass)
+#install.packages("GGally")
+#install.packages("broom.helpers")
+library(GGally)
+library(broom.helpers)
 
 ################################
 # Abrir el dataframe procesado #
@@ -98,7 +106,8 @@ influencePlot(logit,id.method='identify',main="Influence Plot")
 summary(influence.measures(logit))
     # Para Hatvalues
     # Qué mide: cuán lejos está una observación del centro del espacio de los predictores.
-      high_leverage <- which(hatvalues(logit)>2*p/n)
+    # Dicho de otra forma, mide cuánto influencia tiene una observación sobre su propia predicción. Es decir, cuánto "poder" tiene un punto para jalar la línea o curva de ajuste hacia sí mismo.
+      high_leverage <- which(hatvalues(logit)>3*p/n)
     # Para Residuos Studentizados
     # Qué mide: cuán inusual es la respuesta observada dado el modelo ajustado, excluyendo la observación en cuestión.
       outliers_rstud <- which(abs(rstudent(logit))>2)
@@ -158,8 +167,6 @@ saveRDS(paes.train_sin_influyentes, "C:/Users/diego/OneDrive/Escritorio/Diplomad
 modelo_robusto <- glmrob(admit ~ paes_std + nem_std + rank, data = paes.train, family = binomial)
 summary(modelo_robusto)
 exp(modelo_robusto$coefficients)
-
-
 
 ######################################
 # Nuevo Modelo Logit sin Influyentes #
@@ -237,7 +244,7 @@ str(paes.train_sin_influyentes)
 
 # Curva ROC y AUC
 
-# Estandarización de la variable paes y nem, según la media y sd de paes train
+# Estandarización de la variable paes y nem, según la media y sd de paes train y nem train
 media_paes <- mean(paes.train$paes, na.rm = TRUE)
 desv_paes  <- sd(paes.train$paes, na.rm = TRUE)
 paes.test$paes_std <- (paes.test$paes - media_paes) / desv_paes
@@ -251,10 +258,20 @@ prob <- predict(modelo_final, newdata = paes.test, type = "response")
 roc_curve <- roc(paes.test$admit, prob)
 p1<-plot(roc_curve)
 
-# Modelo robusto
-prob2 <- predict(modelo_robusto, newdata = paes.test, type = "response")
-roc_curve2 <- roc(paes.test$admit, prob2)
 
 # Comparación con modelo robusto
 auc(roc_curve)
-auc(roc_curve2)
+
+# Matriz de Confusión
+confusion_matrix(modelo_final,DATA=paes.test)
+
+# Predicción Estudiante con valores random
+
+ind.nuevo <- data.frame(1, 701, 5,8, "Grupo B", 1.065, 0.56)
+
+ind.nuevo <- data.frame(
+  rank = factor("Grupo B", levels = levels(paes.train_sin_influyentes$rank)),
+  paes_std = 1.065,
+  nem_std = 0.56
+)
+predict(logit, newdata = ind.nuevo, type = "response")
